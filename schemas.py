@@ -29,7 +29,7 @@ class SprayRecordCreate(BaseModel):
 class Vineyard(BaseModel):
     id: int
     name: str
-    name_slug: str
+    address: str
 
     class Config:
         orm_mode = True
@@ -37,4 +37,18 @@ class Vineyard(BaseModel):
 
 class VineyardCreate(BaseModel):
     name: str
-    name_slug: str
+    address: str
+
+
+class Chemical(BaseModel):
+    id: int
+    name: str
+    active_ingredient: str
+
+    class Config:
+        orm_mode = True
+
+
+class ChemicalCreate(BaseModel):
+    name: str
+    active_ingredient: str

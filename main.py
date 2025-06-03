@@ -1,10 +1,13 @@
-from fastapi import FastAPI, status, HTTPException, Depends
+from fastapi import FastAPI, status, HTTPException, Depends, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from database import Base, engine, SessionLocal
 from sqlalchemy.orm import Session
+from slugify import slugify
 from typing import List
 import models
 import schemas
-
 
 # Create db
 Base.metadata.create_all(engine)
@@ -20,9 +23,88 @@ def get_session():
     finally:
         session.close()
 
-@app.get("/")
-async def root():
-    return {"message": "Spray Records"}
+# Front End
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def list_vineyards_html(request: Request, session: Session = Depends(get_session)):
+
+    vineyard_list = session.query(models.Vineyard).all()
+
+    return templates.TemplateResponse(
+        request=request, name="vineyards.html", context={"vineyards": vineyard_list}
+    )
+
+# Chemicals
+
+@app.post("/chemical", response_model=schemas.Chemical, status_code=status.HTTP_201_CREATED)
+def create_chemical(chemical: schemas.ChemicalCreate, session: Session = Depends(get_session)):
+
+    session = SessionLocal()
+
+    db = models.Chemical(name = chemical.name,
+                         active_ingredient = chemical.active_ingredient,
+                         )
+    session.add(db)
+    session.commit()
+    session.refresh(db)
+
+    return db
+
+@app.get("/chemical/{id}", response_model=schemas.Chemical)
+def read_chemical(id: int, session: Session = Depends(get_session)):
+
+    chemical = session.query(models.Chemical).get(id)
+
+    if not chemical:
+        raise HTTPException(status_code=404, detail=f"Chemical with id {id} not found")
+
+    return chemical
+
+@app.put("/chemical/{id}")
+def update_chemical(id: int, 
+                        name: str,
+                        active_ingredient: str,
+                        session: Session = Depends(get_session)
+                        ):
+
+    chemical = session.query(models.Chemical).get(id)
+
+    if chemical:
+        if name: 
+            chemical.name = name        
+        if active_ingredient:
+            chemical.active_ingredient = active_ingredient
+        session.commit()
+
+    if not chemical:
+        raise HTTPException(status_code=404, detail=f"Chemical with id {id} not found")
+
+    return chemical
+
+@app.delete("/chemical/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_chemical(id: int, session: Session = Depends(get_session)):
+
+    chemical = session.query(models.Chemical).get(id)
+
+    if chemical:
+        session.delete(chemical)
+        session.commit()
+    else:
+        raise HTTPException(status_code=404, detail=f"Chemical with id {id} not found")
+
+    return None
+
+@app.get("/chemicals", response_model = List[schemas.Chemical])
+def read_chemical_list(session: Session = Depends(get_session)):
+
+    chemical_list = session.query(models.Chemical).all()
+
+    return chemical_list
+
 
 # Vineyards
 
@@ -31,7 +113,8 @@ def create_vineyard(vineyard: schemas.VineyardCreate, session: Session = Depends
 
     session = SessionLocal()
 
-    db = models.Vineyard(name = vineyard.name)
+    db = models.Vineyard(name = vineyard.name,
+                         )
     session.add(db)
     session.commit()
     session.refresh(db)
@@ -47,6 +130,47 @@ def read_vineyard(id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail=f"Vineyard with id {id} not found")
 
     return vineyard
+
+@app.put("/vineyard/{id}")
+def update_vineyard(id: int, 
+                        name: str,
+                        address: str,
+                        session: Session = Depends(get_session)
+                        ):
+
+    vineyard = session.query(models.Vineyard).get(id)
+
+    if vineyard:
+        if name: 
+            vineyard.name = name        
+        if address:
+            vineyard.address = address
+        session.commit()
+
+    if not vineyard:
+        raise HTTPException(status_code=404, detail=f"Vineyard with id {id} not found")
+
+    return vineyard
+
+@app.delete("/vineyard/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_vineyard(id: int, session: Session = Depends(get_session)):
+
+    vineyard = session.query(models.Vineyard).get(id)
+
+    if vineyard:
+        session.delete(vineyard)
+        session.commit()
+    else:
+        raise HTTPException(status_code=404, detail=f"Vineyard with id {id} not found")
+
+    return None
+
+@app.get("/vineyards", response_model = List[schemas.Vineyard])
+def read_vineyard_list(session: Session = Depends(get_session)):
+
+    vineyard_list = session.query(models.Vineyard).all()
+
+    return vineyard_list
 
 # Spray Records
 
@@ -124,7 +248,7 @@ def delete_spray_record(id: int, session: Session = Depends(get_session)):
 
     return None
 
-@app.get("/spray_record", response_model = List[schemas.SprayRecord])
+@app.get("/spray_records", response_model = List[schemas.SprayRecord])
 def read_spray_record_list(session: Session = Depends(get_session)):
 
     spray_record_list = session.query(models.SprayRecord).all()

@@ -1,5 +1,5 @@
-from fastapi import FastAPI, status, HTTPException, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, status, HTTPException, Depends, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from database import Base, engine, SessionLocal
@@ -8,6 +8,10 @@ from slugify import slugify
 from typing import List
 import models
 import schemas
+import frontend
+
+
+from starlette.status import HTTP_303_SEE_OTHER
 
 # Create db
 Base.metadata.create_all(engine)
@@ -25,9 +29,82 @@ def get_session():
 
 # Front End
 
+@app.get('/')
+def read_root():
+    return {'Hello': 'World'}
+
+frontend.init(app)
+
+if __name__ == '__main__':
+    print('Please start the app with the "uvicorn" command as shown in the start.sh script')
+
+
+## jinja only
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
+
+# HTML view to list and edit chemicals
+@app.get("/chemicals", response_class=HTMLResponse)
+@app.get("/chemicals/{chemical_id}", response_class=HTMLResponse)
+def chemical_form(
+    request: Request,
+    chemical_id: int = None,
+    session: Session = Depends(get_session)
+):
+    chemical = session.query(models.Chemical).get(chemical_id) if chemical_id else None
+    chemicals = session.query(models.Chemical).all()
+    return templates.TemplateResponse(
+        "chemicals.html",
+        {
+            "request": request,
+            "chemical": chemical,
+            "chemicals": chemicals,
+        }
+    )
+
+# Create new chemical via HTML form
+@app.post("/chemicals")
+def create_chemical_html(
+    request: Request,
+    name: str = Form(...),
+    active_ingredient: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    chemical = models.Chemical(name=name, active_ingredient=active_ingredient)
+    session.add(chemical)
+    session.commit()
+    return RedirectResponse(url="/chemicals", status_code=HTTP_303_SEE_OTHER)
+
+# Update existing chemical via HTML form
+@app.post("/chemicals/{chemical_id}")
+def update_chemical_html(
+    chemical_id: int,
+    name: str = Form(...),
+    active_ingredient: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    chemical = session.query(models.Chemical).get(chemical_id)
+    if not chemical:
+        raise HTTPException(status_code=404, detail="Chemical not found")
+    chemical.name = name
+    chemical.active_ingredient = active_ingredient
+    session.commit()
+    return RedirectResponse(url="/chemicals", status_code=HTTP_303_SEE_OTHER)
+
+# Delete chemical via HTML form
+@app.post("/chemicals/{chemical_id}/delete")
+def delete_chemical_html(
+    chemical_id: int,
+    session: Session = Depends(get_session),
+):
+    chemical = session.query(models.Chemical).get(chemical_id)
+    if chemical:
+        session.delete(chemical)
+        session.commit()
+    return RedirectResponse(url="/chemicals", status_code=HTTP_303_SEE_OTHER)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def list_vineyards_html(request: Request, session: Session = Depends(get_session)):

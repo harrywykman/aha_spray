@@ -13,7 +13,7 @@ class SprayRecord(BaseModel):
     relative_humidity: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True 
 
 # Create SprayRecordCreate Base Model
 class SprayRecordCreate(BaseModel):
@@ -32,7 +32,7 @@ class Vineyard(BaseModel):
     address: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True 
 
 
 class VineyardCreate(BaseModel):
@@ -46,7 +46,7 @@ class Chemical(BaseModel):
     active_ingredient: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True 
 
 
 class ChemicalCreate(BaseModel):

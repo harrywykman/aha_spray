@@ -9,8 +9,6 @@ from typing import List
 import models
 import schemas
 import frontend
-
-
 from starlette.status import HTTP_303_SEE_OTHER
 
 # Create db
@@ -28,16 +26,6 @@ def get_session():
         session.close()
 
 # Front End
-
-@app.get('/')
-def read_root():
-    return {'Hello': 'World'}
-
-frontend.init(app)
-
-if __name__ == '__main__':
-    print('Please start the app with the "uvicorn" command as shown in the start.sh script')
-
 
 ## jinja only
 
@@ -105,6 +93,105 @@ def delete_chemical_html(
         session.commit()
     return RedirectResponse(url="/chemicals", status_code=HTTP_303_SEE_OTHER)
 
+@app.get("/vineyards", response_class=HTMLResponse)
+def vineyard_index(
+    request: Request,
+    session: Session = Depends(get_session),
+    ):
+    vineyards = session.query(models.Vineyard).all()
+    return templates.TemplateResponse(
+        "vineyards.html",
+        {
+            "request": request,
+            "vineyard": None,
+            "vineyards": vineyards,
+            "spray_units": [],
+        }
+    )
+
+# HTML view to list and edit vineyards
+@app.get("/vineyards", response_class=HTMLResponse)
+@app.get("/vineyards/{vineyard_id}", response_class=HTMLResponse)
+def vineyard_form(
+    request: Request,
+    vineyard_id: int,
+    session: Session = Depends(get_session),
+):
+    vineyard = session.query(models.Vineyard).get(vineyard_id)
+    if not vineyard:
+        raise HTTPException(status_code=404, detail="Vineyard not found")
+
+    vineyards = session.query(models.Vineyard).all()
+    return templates.TemplateResponse(
+        "vineyards.html",
+        {
+            "request": request,
+            "vineyard": vineyard,
+            "vineyards": vineyards,
+            "spray_units": vineyard.spray_units,
+        }
+    )
+"""
+@app.get("/vineyards/{vineyard_id}", response_class=HTMLResponse)
+def vineyard_form(
+    request: Request,
+    vineyard_id: int = None,
+    session: Session = Depends(get_session),
+):
+    vineyard = session.query(models.Vineyard).get(vineyard_id) if vineyard_id else None
+    vineyards = session.query(models.Vineyard).all()
+    return templates.TemplateResponse(
+        "vineyards.html",
+        {
+            "request": request,
+            "vineyard": vineyard,
+            "vineyards": vineyards,
+        }
+    )
+"""
+
+
+# Create new vineyard via HTML form
+@app.post("/vineyards")
+def create_vineyard_html(
+    name: str = Form(...),
+    address: str = Form(""),
+    session: Session = Depends(get_session),
+):
+    vineyard = models.Vineyard(name=name, address=address)
+    session.add(vineyard)
+    session.commit()
+    return RedirectResponse(url="/vineyards", status_code=HTTP_303_SEE_OTHER)
+
+# Update existing vineyard via HTML form
+@app.post("/vineyards/{vineyard_id}")
+def update_vineyard_html(
+    vineyard_id: int,
+    name: str = Form(...),
+    address: str = Form(""),
+    session: Session = Depends(get_session),
+):
+    vineyard = session.query(models.Vineyard).get(vineyard_id)
+    if not vineyard:
+        raise HTTPException(status_code=404, detail="Vineyard not found")
+    vineyard.name = name
+    vineyard.address = address
+    session.commit()
+    return RedirectResponse(url="/vineyards", status_code=HTTP_303_SEE_OTHER)
+    
+
+# Delete vineyard via HTML form
+@app.post("/vineyards/{vineyard_id}/delete")
+def delete_vineyard_html(
+    vineyard_id: int,
+    session: Session = Depends(get_session),
+):
+    vineyard = session.query(models.Vineyard).get(vineyard_id)
+    if vineyard:
+        session.delete(vineyard)
+        session.commit()
+    return RedirectResponse(url="/vineyards", status_code=HTTP_303_SEE_OTHER)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def list_vineyards_html(request: Request, session: Session = Depends(get_session)):
@@ -114,6 +201,65 @@ async def list_vineyards_html(request: Request, session: Session = Depends(get_s
     return templates.TemplateResponse(
         request=request, name="vineyards.html", context={"vineyards": vineyard_list}
     )
+
+# SPRAY UNITS
+
+@app.post("/vineyards/{vineyard_id}/spray_units")
+def add_spray_unit(
+    vineyard_id: int,
+    name: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    vineyard = session.query(models.Vineyard).get(vineyard_id)
+    if not vineyard:
+        raise HTTPException(status_code=404, detail="Vineyard not found")
+
+    unit = models.SprayUnit(name=name, vineyard_id=vineyard_id)
+    session.add(unit)
+    session.commit()
+
+    return RedirectResponse(url=f"/vineyards/{vineyard_id}", status_code=HTTP_303_SEE_OTHER)
+
+@app.get("/spray_units/{unit_id}/edit", response_class=HTMLResponse)
+def edit_spray_unit_form(
+    unit_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    unit = session.query(models.SprayUnit).get(unit_id)
+    if not unit:
+        raise HTTPException(status_code=404, detail="Spray unit not found")
+
+    return templates.TemplateResponse("edit_spray_unit.html", {
+        "request": request,
+        "unit": unit
+    })
+
+
+@app.post("/spray_units/{unit_id}/edit")
+def update_spray_unit(
+    unit_id: int,
+    name: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    unit = session.query(models.SprayUnit).get(unit_id)
+    if not unit:
+        raise HTTPException(status_code=404, detail="Spray unit not found")
+
+    unit.name = name
+    session.commit()
+
+    return RedirectResponse(url=f"/vineyards/{unit.vineyard_id}", status_code=HTTP_303_SEE_OTHER)
+
+@app.post("/spray_units/{unit_id}/delete")
+def delete_spray_unit(unit_id: int, session: Session = Depends(get_session)):
+    unit = session.query(models.SprayUnit).get(unit_id)
+    vineyard_id = unit.vineyard_id
+    if unit:
+        session.delete(unit)
+        session.commit()
+    return RedirectResponse(url=f"/vineyards/{vineyard_id}", status_code=303)
+
 
 # Chemicals
 

@@ -1,0 +1,21 @@
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th style="width: 160px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for unit in spray_units %}
+        <tr>
+            <td>{{ unit.name }}</td>
+            <td>
+                <a href="/spray_units/{{ unit.id }}/edit" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                <form action="/spray_units/{{ unit.id }}/delete" method="post" class="d-inline" onsubmit="return confirm('Delete spray unit?')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

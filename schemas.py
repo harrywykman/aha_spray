@@ -52,3 +52,14 @@ class Chemical(BaseModel):
 class ChemicalCreate(BaseModel):
     name: str
     active_ingredient: str
+
+class SprayUnit(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True 
+
+class SprayUnitCreate(BaseModel):
+    pass
+

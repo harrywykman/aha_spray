@@ -40,6 +40,7 @@ class SprayProgram(Base):
     __tablename__ = 'spray_programs'
 
     id = Column(Integer, primary_key=True)
+    number = Column(Integer)
     spray_unit_id = Column(Integer, ForeignKey('spray_units.id'), nullable=False)
     date = Column(Date, nullable=False)
 

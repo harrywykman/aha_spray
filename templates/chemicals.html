@@ -4,40 +4,13 @@
 <h1>{{ chemical and 'Edit' or 'Add' }} Chemical</h1>
 
 <form method="post" action="{{ chemical and '/chemicals/' ~ chemical.id or '/chemicals' }}">
-    <label>Name:</label><br>
-    <input type="text" name="name" required value="{{ chemical.name if chemical else '' }}"><br><br>
-
-    <label>Active Ingredient:</label><br>
-    <input type="text" name="active_ingredient" required value="{{ chemical.active_ingredient if chemical else '' }}"><br><br>
-
-    <button type="submit">{{ chemical and 'Update' or 'Add' }}</button>
-    {% if chemical %}
-        <a href="/chemicals">Cancel</a>
-    {% endif %}
+    {% include 'partials/chemical_form.html' %}
 </form>
 
-<hr>
+<hr class="my-5">
 
-<h2>All Chemicals</h2>
-<table border="1" cellpadding="5" cellspacing="0">
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Active Ingredient</th>
-        <th>Actions</th>
-    </tr>
-    {% for c in chemicals %}
-    <tr>
-        <td>{{ c.id }}</td>
-        <td>{{ c.name }}</td>
-        <td>{{ c.active_ingredient }}</td>
-        <td>
-            <a href="/chemicals/{{ c.id }}">Edit</a>
-            <form method="post" action="/chemicals/{{ c.id }}/delete" style="display:inline" onsubmit="return confirm('Delete?');">
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<h1>All Chemicals</h1>
+
+{% include 'partials/chemical_list.html' %}
+
 {% endblock %}

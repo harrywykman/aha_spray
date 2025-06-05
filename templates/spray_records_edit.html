@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Edit Spray Record{% endblock %}
+
+{% block content %}
+<h2>Edit Spray Record</h2>
+
+{% if record.spray_program %}
+  <div class="mb-4 p-3 border rounded bg-light">
+    <h5 class="mb-2">Program {{ record.spray_program.number }}</h5>
+    <p class="mb-1"><strong>Date:</strong> {{ record.spray_program.date }}</p>
+    
+    {% if record.spray_program.program_chemicals %}
+      <ul class="mb-0">
+        {% for pc in record.spray_program.program_chemicals %}
+          <li>
+            <strong>{{ pc.chemical.name }}</strong> —
+            {{ "%.2f"|format(pc.mix_rate_per_100L) }}/100L,
+            {{ "%.2f"|format(pc.water_spray_rate_per_hectare) }} L/ha
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <em>No chemicals listed</em>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-muted"><em>No Spray Program assigned to this record.</em></p>
+{% endif %}
+
+<form method="post" action="/spray_records/{{ record.id }}/edit">
+  <div class="form-group">
+    <label>Date:</label>
+    <input type="date" name="date" class="form-control" value="{{ record.date }}" required>
+  </div>
+  <div class="form-group">
+    <label>EL:</label>
+    <input type="number" name="el" class="form-control" value="{{ record.el }}" required>
+  </div>
+  <div class="form-group">
+    <label>Operator:</label>
+    <input type="text" name="operator" class="form-control" value="{{ record.operator }}" required>
+  </div>
+  <div class="form-group">
+    <label>Wind Speed (km/h):</label>
+    <input type="number" name="wind_speed" class="form-control" value="{{ record.wind_speed }}" required>
+  </div>
+  <div class="form-group">
+    <label>Wind Direction:</label>
+    <input type="text" name="wind_direction" class="form-control" value="{{ record.wind_direction }}" required>
+  </div>
+  <div class="form-group">
+    <label>Temperature (°C):</label>
+    <input type="number" name="temp" class="form-control" value="{{ record.temp }}" required>
+  </div>
+  <div class="form-group">
+    <label>Relative Humidity (%):</label>
+    <input type="number" name="relative_humidity" class="form-control" value="{{ record.relative_humidity }}" required>
+  </div>
+  <div class="form-group">
+    <label>Spray Unit:</label>
+    <select name="spray_unit_id" class="form-control">
+      {% for unit in units %}
+        <option value="{{ unit.id }}" {% if unit.id == record.spray_unit_id %}selected{% endif %}>{{ unit.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Spray Program:</label>
+    <select name="spray_program_id" class="form-control">
+      {% for program in programs %}
+        <option value="{{ program.id }}" {% if program.id == record.spray_program_id %}selected{% endif %}>
+          Program {{ program.number }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-check my-3">
+    <input type="checkbox" class="form-check-input" name="complete" value="1" {% if record.complete %}checked{% endif %}>
+    <label class="form-check-label">Complete</label>
+  </div>
+  <button type="submit" class="btn btn-success">Update Record</button>
+  <a href="/vineyards/{{ vineyard_id }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

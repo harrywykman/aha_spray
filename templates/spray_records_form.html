@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">New Spray Record</h2>
+
+<form method="post" action="/vineyards/{{ vineyard_id }}/spray_records">
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="date" class="form-label">Date</label>
+      <input type="date" name="date" id="date" class="form-control" required>
+    </div>
+    <div class="col-md-4">
+      <label for="el" class="form-label">EL</label>
+      <input type="number" name="el" id="el" class="form-control" required>
+    </div>
+    <div class="col-md-4">
+      <label for="operator" class="form-label">Operator</label>
+      <input type="text" name="operator" id="operator" class="form-control" required>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="wind_speed" class="form-label">Wind Speed (km/h)</label>
+      <input type="number" name="wind_speed" id="wind_speed" class="form-control" required>
+    </div>
+    <div class="col-md-4">
+      <label for="wind_direction" class="form-label">Wind Direction</label>
+      <input type="text" name="wind_direction" id="wind_direction" class="form-control" required>
+    </div>
+    <div class="col-md-2">
+      <label for="temp" class="form-label">Temp (°C)</label>
+      <input type="number" name="temp" id="temp" class="form-control" required>
+    </div>
+    <div class="col-md-2">
+      <label for="relative_humidity" class="form-label">Humidity (%)</label>
+      <input type="number" name="relative_humidity" id="relative_humidity" class="form-control" required>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="spray_unit_id" class="form-label">Spray Unit</label>
+      <select name="spray_unit_id" id="spray_unit_id" class="form-select" required>
+        {% for unit in units %}
+          <option value="{{ unit.id }}">{{ unit.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="spray_program_id" class="form-label">Spray Program</label>
+      <select name="spray_program_id" id="spray_program_id" class="form-select" required>
+        {% for program in programs %}
+          <option value="{{ program.id }}">Program {{ program.number }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" name="complete" value="1" id="complete">
+    <label class="form-check-label" for="complete">
+      Complete
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

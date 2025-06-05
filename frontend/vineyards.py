@@ -13,6 +13,19 @@ templates = Jinja2Templates(directory="templates")
 
 # HTML routes
 
+@router.get("/", response_class=HTMLResponse)
+def vineyard_index(request: Request, session: Session = Depends(get_session)):
+    vineyards = session.query(models.Vineyard).all()
+    return templates.TemplateResponse(
+        "vineyards.html",
+        {
+            "request": request,
+            "vineyard": None,
+            "vineyards": vineyards,
+            "spray_units": [],
+        }
+    )
+
 @router.get("/vineyards", response_class=HTMLResponse)
 def vineyard_index(request: Request, session: Session = Depends(get_session)):
     vineyards = session.query(models.Vineyard).all()
@@ -34,7 +47,7 @@ def vineyard_form(request: Request, vineyard_id: int, session: Session = Depends
 
     vineyards = session.query(models.Vineyard).all()
     return templates.TemplateResponse(
-        "vineyards.html",
+        "vineyard.html",
         {
             "request": request,
             "vineyard": vineyard,

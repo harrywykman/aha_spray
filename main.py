@@ -12,7 +12,7 @@ import frontend
 from starlette.status import HTTP_303_SEE_OTHER
 
 from api import chemicals, vineyards, spray_units, spray_records
-from frontend import chemicals, vineyards, spray_units, spray_records
+from frontend import chemicals, vineyards, spray_units, spray_records, spray_programs
 
 # Initialise Fast API app
 app = FastAPI()
@@ -26,6 +26,8 @@ app.include_router(chemicals.router)
 app.include_router(vineyards.router)
 app.include_router(spray_units.router)
 app.include_router(spray_records.router)
+app.include_router(spray_programs.router)
+
 
 # Create db
 Base.metadata.create_all(engine)

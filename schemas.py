@@ -1,5 +1,31 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
+from typing import Optional, List
+
+
+class SprayProgramChemicalCreate(BaseModel):
+    chemical_id: int
+    mix_rate_per_100L: int
+    water_spray_rate_per_hectare: int
+
+class SprayProgramBase(BaseModel):
+    number: int
+    spray_unit_id: int  | None = None
+    date: date
+    chemicals: List[SprayProgramChemicalCreate]
+
+# Input model
+class SprayProgramCreate(SprayProgramBase):
+    pass
+
+# Output model
+class SprayProgramRead(SprayProgramBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+
 
 # Create SprayRecord Base Model
 class SprayRecord(BaseModel):

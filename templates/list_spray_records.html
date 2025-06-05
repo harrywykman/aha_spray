@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Spray Records for {{ vineyard.name }}</h2>
+<a href="/vineyards/{{ vineyard.id }}/spray_records/new" class="btn btn-primary">+ New Record</a>
+<table class="table table-bordered mt-3">
+  <tr>
+    <th>Date</th>
+    <th>Operator</th>
+    <th>EL</th>
+    <th>Spray Unit</th>
+    <th>Spray Program</th>
+    <th>Weather</th>
+    <th>Complete</th>
+  </tr>
+  {% for record in spray_records %}
+  <tr>
+    <td>{{ record.date }}</td>
+    <td>{{ record.operator }}</td>
+    <td>{{ record.el }}</td>
+    <td>{{ record.spray_unit.name }}</td>
+    <td>{{ record.spray_program.number }}</td>
+    <td>{{ record.temp }}°C / {{ record.wind_speed }} km/h / RH {{ record.relative_humidity }}%</td>
+    <td>{{ "✔" if record.complete else "✘" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

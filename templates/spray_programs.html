@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Spray Programs</h1>
+<a href="/spray_programs/new" class="btn btn-success mb-3">+ New Program</a>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Number</th>
+      <th>Date</th>
+      <th>Spray Unit</th>
+      <th>Chemicals & Rates</th>
+      <th>Completed</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in programs %}
+    <tr>
+      <td>{{ p.number }}</td>
+      <td>{{ p.date }}</td>
+      <td>{{ p.spray_unit.name if p.spray_unit else 'N/A' }}</td>
+      <td>
+        {% if p.program_chemicals %}
+          <ul class="mb-0">
+            {% for pc in p.program_chemicals %}
+              <li>
+                {{ pc.chemical.name }} — 
+                Mix Rate: {{ "%.2f"|format(pc.mix_rate_per_100L) }} per 100L, 
+                Water Spray Rate: {{ "%.2f"|format(pc.water_spray_rate_per_hectare) }} per hectare
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <em>No chemicals</em>
+        {% endif %}
+      </td>
+      <td>
+        {% set complete = p.spray_records | selectattr("complete") | list | length %}
+        {% set incomplete = p.spray_records | rejectattr("complete") | list | length %}
+        
+        <a href="/spray_records?program_id={{ p.id }}&complete=true">✅ {{ complete }}</a><br>
+        <a href="/spray_records?program_id={{ p.id }}&complete=false">❌ {{ incomplete }}</a>
+      </td>
+      <td>
+        <a href="/spray_programs/{{ p.id }}">View/Edit</a>
+
+        <form method="post" action="/spray_programs/{{ p.id }}/add_to_all_units" style="display:inline;">
+          <button type="submit" class="btn btn-sm btn-primary ms-2" 
+            onclick="return confirm('Add program {{ p.number }} to ALL spray units for all vineyards?');">
+            Add to All Units
+          </button>
+         </form>
+
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

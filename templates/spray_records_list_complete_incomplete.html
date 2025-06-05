@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Spray Records{% endblock %}
+
+{% block content %}
+<h1>Spray Records</h1>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Operator</th>
+      <th>Vineyard</th>
+      <th>Spray Unit</th>
+      <th>Spray Program</th>
+      <th>Complete?</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for record in records %}
+    <tr>
+      <td>{{ record.date }}</td>
+      <td>{{ record.operator }}</td>
+      <td>{{ record.spray_unit.vineyard.name if record.spray_unit and record.spray_unit.vineyard else 'N/A' }}</td>
+      <td>{{ record.spray_unit.name if record.spray_unit else 'N/A' }}</td>
+      <td>
+        {% if record.spray_program %}
+          Program {{ record.spray_program.number }}<br>
+          <small>{{ record.spray_program.date }}</small>
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td>{{ '✅' if record.complete else '❌' }}</td>
+      <td>
+        <a href="/spray_records/{{ record.id }}/edit">Edit</a> |
+        <a href="/spray_records/{{ record.id }}/delete" onclick="return confirm('Delete this record?')">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="/spray_programs" class="btn btn-secondary mt-3">Back to Spray Programs</a>
+{% endblock %}

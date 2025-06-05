@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ program and "Edit" or "New" }} Spray Program</h1>
+
+<form method="post" action="{{ program and '/spray_programs/' ~ program.id or '/spray_programs' }}">
+  <div class="mb-3">
+    <label for="number" class="form-label">Program Number</label>
+    <input type="number" class="form-control" name="number" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="date" class="form-label">Date</label>
+    <input type="date" class="form-control" name="date" required>
+  </div>
+
+<!--   <div class="mb-3">
+    <label for="spray_unit_id" class="form-label">Spray Unit (optional)</label>
+    <select name="spray_unit_id" class="form-select">
+      <option value="">-- None --</option>
+      {% for unit in spray_units %}
+        <option value="{{ unit.id }}">{{ unit.name }} ({{ unit.vineyard.name }})</option>
+      {% endfor %}
+    </select>
+  </div> -->
+
+  <hr>
+  <h3>Chemicals</h3>
+  <div id="chemical-container"></div>
+  <button type="button" class="btn btn-secondary mt-2" onclick="addChemical()">Add Chemical</button>
+
+  <hr>
+  <button type="submit" class="btn btn-primary mt-3">Save Program</button>
+</form>
+
+<script>
+  let chemicalOptions = `{% for chem in chemicals %}<option value="{{ chem.id }}">{{ chem.name }} ({{ chem.active_ingredient }})</option>{% endfor %}`;
+
+  function addChemical() {
+    const container = document.getElementById("chemical-container");
+    const index = container.children.length;
+
+    const div = document.createElement("div");
+    div.className = "chemical-entry mb-3 border p-3 rounded";
+    div.innerHTML = `
+      <div class="mb-2">
+        <label>Chemical</label>
+        <select name="chemicals[${index}].chemical_id" class="form-select" required>
+          ${chemicalOptions}
+        </select>
+      </div>
+      <div class="mb-2">
+        <label>Mix Rate (per 100L)</label>
+        <input type="number" step="0.01" name="chemicals[${index}].mix_rate_per_100L" class="form-control" required>
+      </div>
+      <div class="mb-2">
+        <label>Water Spray Rate (per hectare)</label>
+        <input type="number" step="0.01" name="chemicals[${index}].water_spray_rate_per_hectare" class="form-control" required>
+      </div>
+      <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.parentElement.remove()">Remove</button>
+    `;
+    container.appendChild(div);
+  }
+</script>
+{% endblock %}

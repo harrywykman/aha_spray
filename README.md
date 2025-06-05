@@ -19,21 +19,22 @@ A web application developed using FastAPI and Jinja2 templates for managing and 
 
 1. Clone the repository:
 
-   git clone https://github.com/harrywykman/aha_spray.git
-   cd aha_spray
+   `git clone https://github.com/harrywykman/aha_spray.git`
+   `cd aha_spray`
 
 2. Create a virtual environment:
 
-    python3 -m venv venv
-    source venv/bin/activate
+    `python3 -m venv venv`
+
+    `source venv/bin/activate`
 
 3. Install dependencies:
 
-    pip install -r requirements.txt
+    `pip install -r requirements.txt`
 
 4. Run the application:
 
-    uvicorn main:app --reload
+    `uvicorn main:app --reload`
 
 The application will be accessible at http://127.0.0.1:8000.
 `uvicorn main:app --reload`

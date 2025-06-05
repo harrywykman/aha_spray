@@ -21,6 +21,7 @@
 <a href="/vineyards/{{ vineyard.id }}/spray_records/new" class="btn btn-primary mb-2">+ New Spray Record</a>
 
 {% if vineyard.spray_records %}
+<div class="table-responsive">
 <table class="table table-sm table-bordered">
   <thead>
     <tr>
@@ -68,6 +69,7 @@
     {% endfor %}
   </tbody>
 </table>
+</div>
 {% else %}
   <p>No spray records yet.</p>
 {% endif %}
